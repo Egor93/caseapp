@@ -1,25 +1,25 @@
-import logo from './logo.svg';
 import './App.css';
-
+import {ConfigProvider} from "antd";
+import {MainComponent} from "./MainComponent";
 function App() {
+  const theme={
+    token: {
+      // Seed Token
+      colorPrimary: '#0b1f65',
+      borderRadius: 2,
+      fontFamily: "Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif",
+      // Alias Token
+      colorBgContainer: '#f7f7f8',
+    },
+  }
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+      <div>
+        <ConfigProvider theme={theme}>
+          <MainComponent/>
+        </ConfigProvider>
+      </div>
   );
 }
+
 
 export default App;
