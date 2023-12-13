@@ -1,4 +1,4 @@
-import { Layout, Row } from 'antd';
+import { Layout } from 'antd';
 import {InputForm} from "./InputForm";
 
 const { Header, Footer, Sider, Content } = Layout;

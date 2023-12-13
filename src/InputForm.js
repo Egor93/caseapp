@@ -1,251 +1,31 @@
 import {
     Button, Card,
     Col,
-    DatePicker,
     Form,
-    Input,
-    InputNumber,
-    message, Modal,
     Row,
-    Select,
     Switch,
-    Typography,
     Upload
 } from 'antd';
 import {
-    DeleteColumnOutlined, DeleteOutlined,
     DownloadOutlined,
-    MinusCircleOutlined,
     PlusOutlined,
     UndoOutlined,
     UploadOutlined
 } from '@ant-design/icons';
 import {Fragment, useEffect, useState} from "react";
 import dayjs from "dayjs";
+import PreviewModal from "./PreviewModal";
+import {cardHeadStyle, cardStyle} from "./CardsStyles";
+import PassengerRow from "./PassengerRow";
 
-const cardStyle = {
-    width: "90%",
-    borderStyle: 'solid',
-    borderWidth: "2px",
-    borderColor: '#375180',
-}
-const cardHeadStyle = {
-    backgroundColor: '#ebeff5',
-    color: "#4e5096"
-}
-
-function PreviewModal({isModalOpen, handleOk, handleCancel, passengers}) {
-    return (
-        <>
-            <Modal
-                open={isModalOpen}
-                onOk={handleOk}
-                onCancel={handleCancel}
-            >
-                <Card title="Confirm passengers details"
-                      style={{
-                          ...cardStyle,
-                          borderWidth: '0px',
-                          backgroundColor: '#fff'
-                      }}
-                      headStyle={{
-                          ...cardHeadStyle,
-                          backgroundColor: '#fff'
-                      }}
-                >
-                    <div>
-                        {passengers &&  //in case passengers is undefined
-                            passengers
-                                .filter(passenger => passenger) //filter out undefined or null
-                                .map((passenger, index) => {
-                                    const title = passenger['title'] || "";  //when title is not provided, the rest are required(validated)!
-                                    const fullname = [title, passenger['firstname'], passenger['lastname']].join(" ");
-                                    let birthdateProcessed = "";
-                                    try {
-                                        birthdateProcessed = passenger['birthdate'].format("YYYY-MM-DD")
-                                    } catch (error) {
-                                        console.log("Invalid date/date format", error)
-                                    }
-
-                                    return (
-                                        <Card key={index}
-                                              title={`Passenger ${index + 1}`}
-                                              style={{
-                                                  ...cardStyle,
-                                                  borderWidth: "1px",
-                                                  margin: -1 //avoid double border width on cards intersection
-                                              }}
-                                              bodyStyle={{
-                                                  backgroundColor: '#fff'
-                                              }}
-                                              headStyle={cardHeadStyle}
-                                        >
-                                            <Row>
-                                                <Col span={8}>
-                                                    Full name:
-                                                </Col>
-                                                <Col span={16}>
-                                                    {fullname}
-                                                </Col>
-                                            </Row>
-                                            <Row>
-                                                <Col span={8}>
-                                                    Gender:
-                                                </Col>
-                                                <Col span={8}>
-                                                    {passenger?.gender}
-                                                </Col>
-                                            </Row>
-                                            <Row>
-                                                <Col span={8}>
-                                                    Date of birth:
-                                                </Col>
-                                                <Col span={8}>
-                                                    {birthdateProcessed}
-                                                </Col>
-                                            </Row>
-                                        </Card>
-                                    )
-                                })
-                        }
-                    </div>
-                </Card>
-            </Modal>
-        </>
-    )
-}
-
-function PassengerRow({name, remove, passengerName}) {
-    const dateFormatList = ['YYYY-MM-DD', 'YYYY-MM', 'YYYY']  //this allows for datepicker UI to switch to YYYY when YYYY is entered
-
-    return (
-        <Row
-            style={{
-                justifyContent: 'center' //makes columns evenly spaced
-            }}
-
-        >
-            <Col span={3}
-                 style={{
-                     display: "flex",      //to align the content
-                     alignItems: "end", //to align the content
-                 }}
-            >
-                <Form.Item
-                    wrapperCol={{span: 24}}
-                    name={[name, "title"]}
-                    label="Select title"
-                >
-                    <Select
-                        placeholder="Select title"
-                        allowClear
-                        options={[
-                            {
-                                label: "Mr.",
-                                value: "Mr."
-                            },
-                            {
-                                label: "Mrs.",
-                                value: "Mrs."
-                            }
-                        ]}
-                    />
-                </Form.Item>
-            </Col>
-            <Col span={4}>
-                <Form.Item
-                    wrapperCol={{span: 20}}
-                    name={[name, "gender"]}
-                    rules={[{required: true, message: "Gender is required"}]}
-                    label="Select gender"
-                >
-                    <Select
-                        placeholder="Select gender"
-                        allowClear
-                        options={[
-                            {
-                                label: "Female",
-                                value: "female"
-                            },
-                            {
-                                label: "Male",
-                                value: "male"
-                            }
-                        ]}
-                    />
-                </Form.Item>
-            </Col>
-            <Col span={4}>
-                <Form.Item
-                    wrapperCol={{span: 20}}
-                    name={[name, "firstname"]}
-                    label="First Name"
-                    rules={[{required: true, message: "First Name is required"}]}
-                >
-                    <Input
-                        placeholder="First Name"
-                    />
-                </Form.Item>
-            </Col>
-            <Col span={4}>
-                <Form.Item
-                    wrapperCol={{span: 20}}
-                    name={[name, "lastname"]}
-                    label="Last Name"
-                    rules={[{required: true, message: "Last Name is required"}]}
-                >
-                    <Input
-                        placeholder="Last Name"
-                    />
-                </Form.Item>
-            </Col>
-            <Col span={3}
-                 style={{
-                     display: "flex",      //to align the content
-                     alignItems: "center", //to align the content
-                 }}
-            >
-                <Form.Item
-                    wrapperCol={{span: 24}}
-                    name={[name, "birthdate"]}
-                    label="Date of Birth"
-                    rules={[{required: true, message: "Birth date is required"}]}
-                >
-                    <DatePicker
-                        format={dateFormatList}
-                    />
-                </Form.Item>
-            </Col>
-            <Col span={3}
-                 style={{
-                     display: "flex",
-                     alignItems: "center",
-                 }}
-            >
-                <Button
-                    type='text'
-                    onClick={() => {
-                        console.log("removing passenger", passengerName)
-                        remove(passengerName)  //actually an index 0,1,2 ..
-                    }}>
-                    <DeleteOutlined style={{color: '#9a1010'}}/>
-                </Button>
-            </Col>
-        </Row>
-    )
-}
-
-function PassengerDetails({form, passengers,formTouched}) {
+function PassengerDetails({form, passengers, formTouched}) {
     const [isModalOpen, setIsModalOpen] = useState(false);
-
     const showModal = () => {
         setIsModalOpen(true);
     };
-
     const handleOk = () => {
         setIsModalOpen(false);
     };
-
     const handleCancel = () => {
         setIsModalOpen(false);
     };
@@ -375,7 +155,6 @@ function SaveDetails({form, saveable}) {
 
                         reader.onload = e => {
                             const contents = e.target.result;
-                            console.log(contents);
                             // Parse JSON to object and assign to form value
                             const obj = JSON.parse(contents);
                             obj['passengers'] = obj.passengers.filter(passenger => passenger) //filter out possible nulls
@@ -430,11 +209,11 @@ export function InputForm() {
 
     useEffect(() => {
         //if "empty",e.g. undefined or [] or [null]
-       if (!passengers ||(Array.isArray(passengers) && !passengers[0])){
-           setFormTouched(false)
-       } else {
-           setFormTouched(true)
-       }
+        if (!passengers || (Array.isArray(passengers) && passengers.every(el => !el))) {
+            setFormTouched(false)
+        } else {
+            setFormTouched(true)
+        }
     }, [passengers])
 
     return (
@@ -488,8 +267,7 @@ export function InputForm() {
                         <div>
                             <pre>JSON is {JSON.stringify(form.getFieldValue(), null, 2)}
                             </pre>
-                            {/*{console.log(JSON.stringify(form.getFieldValue(), null, 2))}*/}
-                            {console.log("Passengers", JSON.stringify(passengers, null, 2))}
+                            {/*{console.log("Passengers", JSON.stringify(passengers, null, 2))}*/}
                         </div>}
                 </Col>
             </Row>
