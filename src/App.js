@@ -5,11 +5,12 @@ function App() {
   const theme={
     token: {
       // Seed Token
-      colorPrimary: '#0b1f65',
-      borderRadius: 2,
+      colorPrimary: '#5064bb',
+      borderRadius: 6,
       fontFamily: "Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif",
       // Alias Token
-      colorBgContainer: '#f7f7f8',
+      colorBgContainer: '#f6f6f8',
+        minHeight:"100vh"
     },
   }
   return (

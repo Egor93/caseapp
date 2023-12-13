@@ -5,15 +5,15 @@ const { Header, Footer, Sider, Content } = Layout;
 const headerStyle = {
     textAlign: 'center',
     color: '#fff',
-    height: 50,
+    minHeight: '10%',
     paddingInline: 10,
     lineHeight: '4px',
-    backgroundColor: 'darkblue!important',
+    backgroundColor: '#6ebad3',
 };
 
 const contentStyle = {
     textAlign: 'center',
-    minHeight: 700,
+    minHeight: '80%',
     lineHeight: '30px',
     color: '#fff',
     backgroundColor: 'lightgray',
@@ -21,7 +21,7 @@ const contentStyle = {
 
 const siderStyle= {
     textAlign: 'center',
-    lineHeight: '120px',
+    minHeight: "100%",
     color: '#fff',
     backgroundColor: '#3ba0e9',
 };
@@ -29,6 +29,7 @@ const siderStyle= {
 const footerStyle = {
     textAlign: 'center',
     color: '#fff',
+    minHeight: '5%',
     backgroundColor: '#7dbcea',
 };
 
@@ -39,12 +40,10 @@ export const MainComponent= () => {
                 <Sider style={siderStyle}>Sider</Sider>
                 <Layout>
                     <Header style={headerStyle}>
-                        <div><p style={{color:'violet',fontSize:'30px'}}>MAIN PAGE</p></div>
+                        <div><p style={{color:'wheat',fontSize:'30px'}}>Mock Page</p></div>
                     </Header>
                     <Content style={contentStyle}>
-                        <InputForm>
-
-                        </InputForm>
+                        <InputForm/>
                     </Content>
                     <Footer style={footerStyle}>Footer</Footer>
                 </Layout>
