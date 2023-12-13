@@ -13,8 +13,19 @@ import {
     Upload
 } from 'antd';
 import {DownloadOutlined, MinusCircleOutlined, PlusOutlined, UndoOutlined, UploadOutlined} from '@ant-design/icons';
-import {useEffect, useState} from "react";
+import {Fragment, useEffect, useState} from "react";
 import dayjs from "dayjs";
+
+const cardStyle = {
+    width: "90%",
+    borderStyle: 'solid',
+    borderWidth: "2px",
+    borderColor: '#375180',
+}
+const cardHeadStyle = {
+    backgroundColor: '#ebeff5',
+    color: "#4e5096"
+}
 
 function PreviewModal({isModalOpen, handleOk, handleCancel, passengers}) {
     return (
@@ -24,16 +35,187 @@ function PreviewModal({isModalOpen, handleOk, handleCancel, passengers}) {
                 onOk={handleOk}
                 onCancel={handleCancel}
             >
-                <p>Passenger Name:{JSON.stringify(passengers, null, 2)}</p>
-                <p>Some contents...</p>
-                <p>Some contents...</p>
+                <Card title="Confirm passengers details"
+                      style={{
+                          ...cardStyle,
+                          borderWidth: '0px',
+                          backgroundColor: '#fff'
+                      }}
+                      headStyle={{
+                          ...cardHeadStyle,
+                          backgroundColor: '#fff'
+                      }}
+                >
+                    <div>
+                        {passengers &&  //in case passengers is undefined
+                            passengers
+                                .filter(passenger => passenger) //filter out undefined or null
+                                .map((passenger, index) => {
+                                    const title = passenger['title'] || "";  //when title is not provided, the rest are required(validated)!
+                                    const fullname = [title, passenger['firstname'], passenger['lastname']].join(" ");
+                                    let birthdateProcessed = "";
+                                    try {
+                                        birthdateProcessed = passenger['birthdate'].format("YYYY-MM-DD")
+                                    } catch (error) {
+                                        console.log("Invalid date/date format", error)
+                                    }
+
+                                    return (
+                                        <Card key={index}
+                                              title={`Passenger ${index + 1}`}
+                                              style={{
+                                                  ...cardStyle,
+                                                  borderWidth: "1px",
+                                              }}
+                                              bodyStyle={{
+                                                  backgroundColor: '#fff'
+                                              }}
+                                              headStyle={cardHeadStyle}
+                                        >
+                                            <Row>
+                                                <Col span={8}>
+                                                    Full name:
+                                                </Col>
+                                                <Col span={16}>
+                                                    {fullname}
+                                                </Col>
+                                            </Row>
+                                            <Row>
+                                                <Col span={8}>
+                                                    Gender:
+                                                </Col>
+                                                <Col span={8}>
+                                                    {passenger?.gender}
+                                                </Col>
+                                            </Row>
+                                            <Row>
+                                                <Col span={8}>
+                                                    Date of birth:
+                                                </Col>
+                                                <Col span={8}>
+                                                    {birthdateProcessed}
+                                                </Col>
+                                            </Row>
+                                        </Card>
+                                    )
+                                })
+                        }
+                    </div>
+                </Card>
             </Modal>
         </>
     )
 }
 
-function PassengerDetails({form, handleSalutationChange, resetSalutation, setSaveable, passengers}) {
+function PassengerRow({key, name}) {
     const dateFormatList = ['YYYY-MM-DD', 'YYYY-MM', 'YYYY']  //this allows for datepicker UI to switch to YYYY when YYYY is entered
+    return (
+        <Row
+            key={key}
+            style={{
+                minHeight: "70px",
+                backgroundColor:'#90d6e3',
+                display:'flex',
+                alignContent:'end'
+        }}
+
+        >
+            <Col span={3}
+                 style={{
+                     display: "flex",      //to align the content
+                     alignItems: "end", //to align the content
+                 }}
+            >
+                <Form.Item
+                    wrapperCol={{span: 24}}
+                    name={[name, "title"]}
+                    label="Select title"
+                >
+                    <Select
+                        placeholder="Select title"
+                        allowClear
+                        options={[
+                            {
+                                label: "Mr.",
+                                value: "Mr."
+                            },
+                            {
+                                label: "Mrs.",
+                                value: "Mrs."
+                            }
+                        ]}
+                    />
+                </Form.Item>
+            </Col>
+            <Col span={4}>
+                <Form.Item
+                    wrapperCol={{span: 20}}
+                    name={[name, "gender"]}
+                    rules={[{required: true, message: "Gender is required"}]}
+                    label="Select gender"
+                >
+                    <Select
+                        placeholder="Select gender"
+                        allowClear
+                        options={[
+                            {
+                                label: "Female",
+                                value: "female"
+                            },
+                            {
+                                label: "Male",
+                                value: "male"
+                            }
+                        ]}
+                    />
+                </Form.Item>
+            </Col>
+            <Col span={4}>
+                <Form.Item
+                    wrapperCol={{span: 20}}
+                    name={[name, "firstname"]}
+                    label="First Name"
+                    rules={[{required: true, message: "First Name is required"}]}
+                >
+                    <Input
+                        placeholder="First Name"
+                    />
+                </Form.Item>
+            </Col>
+            <Col span={4}>
+                <Form.Item
+                    wrapperCol={{span: 20}}
+                    name={[name, "lastname"]}
+                    label="Last Name"
+                    rules={[{required: true, message: "Last Name is required"}]}
+                >
+                    <Input
+                        placeholder="Last Name"
+                    />
+                </Form.Item>
+            </Col>
+            <Col span={3}
+                 style={{
+                     display: "flex",      //to align the content
+                     alignItems: "center", //to align the content
+                 }}
+            >
+                <Form.Item
+                    wrapperCol={{span: 24}}
+                    name={[name, "birthdate"]}
+                    label="Date of Birth"
+                    rules={[{required: true, message: "Birth date is required"}]}
+                >
+                    <DatePicker
+                        format={dateFormatList}
+                    />
+                </Form.Item>
+            </Col>
+        </Row>
+    )
+}
+
+function PassengerDetails({form, setSaveable, passengers}) {
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     const showModal = () => {
@@ -61,108 +243,18 @@ function PassengerDetails({form, handleSalutationChange, resetSalutation, setSav
                 <>
                     {
                         fields.map(({key, name, ...restField}) => {
-                            return <Row
-                                key={key}
-                                style={{minHeight: "70px"}}
-                            >
-                                <Col span={3}
-                                     style={{
-                                         display: "flex",      //to align the content
-                                         alignItems: "center", //to align the content
-                                     }}
-                                >
-                                    <Form.Item
-                                        wrapperCol={{span: 24}}
-                                        name={[name, "title"]}
-                                        label="Select title"
-                                    >
-                                        <Select
-                                            placeholder="Select title"
-                                            allowClear
-                                            onChange={(genderValue) => handleSalutationChange(genderValue)}
-                                            options={[
-                                                {
-                                                    label: "Mr.",
-                                                    value: "Mr."
-                                                },
-                                                {
-                                                    label: "Mrs.",
-                                                    value: "Mrs."
-                                                }
-                                            ]}
-                                        />
-                                    </Form.Item>
-                                </Col>
-                                <Col span={4}>
-                                    <Form.Item
-                                        wrapperCol={{span: 20}}
-                                        name={[name, "gender"]}
-                                        rules={[{required: true, message: "Gender is required"}]}
-                                        label="Select gender"
-                                    >
-                                        <Select
-                                            placeholder="Select gender"
-                                            allowClear
-                                            onChange={(genderValue) => handleSalutationChange(genderValue)}
-                                            options={[
-                                                {
-                                                    label: "Female",
-                                                    value: "female"
-                                                },
-                                                {
-                                                    label: "Male",
-                                                    value: "male"
-                                                }
-                                            ]}
-                                        />
-                                    </Form.Item>
-                                </Col>
-                                <Col span={4}>
-                                    <Form.Item
-                                        wrapperCol={{span: 20}}
-                                        name={[name, "firstname"]}
-                                        label="First Name"
-                                        rules={[{required: true, message: "First Name is required"}]}
-                                    >
-                                        <Input
-                                            placeholder="First Name"
-                                        />
-                                    </Form.Item>
-                                </Col>
-                                <Col span={4}>
-                                    <Form.Item
-                                        wrapperCol={{span: 20}}
-                                        name={[name, "lastname"]}
-                                        label="Last Name"
-                                        rules={[{required: true, message: "Last Name is required"}]}
-                                    >
-                                        <Input
-                                            placeholder="Last Name"
-                                        />
-                                    </Form.Item>
-                                </Col>
-                                <Col span={3}
-                                     style={{
-                                         display: "flex",      //to align the content
-                                         alignItems: "center", //to align the content
-                                     }}
-                                >
-                                    <Form.Item
-                                        wrapperCol={{span: 24}}
-                                        name={[name, "birthdate"]}
-                                        label="Date of Birth"
-                                        rules={[{required: true, message: "Birth date is required"}]}
-                                    >
-                                        <DatePicker
-                                            format={dateFormatList}
-                                        />
-                                    </Form.Item>
-                                </Col>
-                            </Row>
+                            return (
+                                //all map elements should have key!
+                                <Fragment key={key}>
+                                    <PassengerRow
+                                        name={name}
+                                    />
+                                </Fragment>
+                            )
                         })
                     }
                     <Row style={{minHeight: "70px"}}>
-                        <Col span={4}>
+                        <Col span={4} style={{display: "flex"}}>
                             <Button
                                 type="dashed"
                                 onClick={() => {
@@ -185,7 +277,7 @@ function PassengerDetails({form, handleSalutationChange, resetSalutation, setSav
         </Form.List>
 
         <Row style={{minHeight: "70px"}}>
-            <Col span={4}>
+            <Col span={4} style={{display: "flex"}}>
                 <Form.Item
                     wrapperCol={{
                         offset: 1
@@ -195,8 +287,14 @@ function PassengerDetails({form, handleSalutationChange, resetSalutation, setSav
                         type="primary"
                         htmlType="submit"
                         onClick={() => {
-                            showModal();
-                            //form.submit();
+                            form.validateFields() //return promise
+                                .then(
+                                    () => {
+                                        showModal()    //if fullfilled
+                                    }
+                                ).catch((error) => {
+                                console.log(error)
+                            })  //if rejected dont do anything, since the required message is shown anyway after .validateFields()
                         }}
                     >
                         Preview changes
@@ -209,7 +307,7 @@ function PassengerDetails({form, handleSalutationChange, resetSalutation, setSav
                     handleCancel={handleCancel}
                 />
             </Col>
-            <Col span={4}>
+            <Col span={4} style={{display: "flex"}}>
                 <Form.Item
                     wrapperCol={{
                         offset: 1
@@ -221,7 +319,6 @@ function PassengerDetails({form, handleSalutationChange, resetSalutation, setSav
                             backgroundColor: '#8d55a9'
                         }}
                         onClick={() => {
-                            resetSalutation();
                             setSaveable(false);
                             form.resetFields();
                         }}
@@ -271,8 +368,6 @@ function SaveDetails({form, saveable}) {
             </Col>
             <Col span={12}>
                 <Button
-                    // disabled={!form.getFieldValue()}
-                    // disabled={Object.keys(form.getFieldValue().length)===0}
                     disabled={!saveable}
                     onClick={() => {
                         const formData = form.getFieldValue();
@@ -297,37 +392,10 @@ function SaveDetails({form, saveable}) {
 
 export function InputForm() {
     const [form] = Form.useForm();
-    const [salutation, setSalutation] = useState("")
     const passengers = Form.useWatch('passengers', form)
-    // const name = firstName && lastName ? `${firstName} ${lastName}` : ""
     const [developerView, setDeveloperView] = useState(true)
     const [saveable, setSaveable] = useState(false)
 
-    const resetSalutation = () => {
-        setSalutation("")
-    }
-    const handleGenderSelect = (genderValue) => {
-        console.log('gender change')
-        switch (genderValue) {
-            case 'male':
-                setSalutation('Mr.');   //causes rerender of the whole form
-                break
-            case 'female':
-                setSalutation("Mrs.");  //causes rerender of the whole form
-                break
-            default:
-        }
-    }
-    const cardStyle = {
-        width: "90%",
-        borderStyle: 'solid',
-        borderWidth: "2px",
-        borderColor: '#375180',
-    }
-    const cardHeadStyle = {
-        backgroundColor: '#ebeff5',
-        color: "#4e5096"
-    }
     return (
         <>
             <Card title='Passenger details'
@@ -339,8 +407,6 @@ export function InputForm() {
                 <PassengerDetails
                     passengers={passengers}
                     form={form}
-                    handleSalutationChange={handleGenderSelect}
-                    resetSalutation={resetSalutation}
                     setSaveable={setSaveable}   //workaround to toggle on/off save button TODO:use touched property!
                 />
                 <Card title='Save details'

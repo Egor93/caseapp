@@ -9,7 +9,7 @@ function App() {
       borderRadius: 6,
       fontFamily: "Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif",
       // Alias Token
-      colorBgContainer: '#f6f6f8',
+      colorBgContainer: '#fff',
         minHeight:"100vh"
     },
   }
