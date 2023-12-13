@@ -5,7 +5,7 @@ const { Header, Footer, Sider, Content } = Layout;
 const headerStyle = {
     textAlign: 'center',
     color: '#fff',
-    minHeight: '10%',
+    minHeight: '5vh',
     paddingInline: 10,
     lineHeight: '4px',
     backgroundColor: '#6ebad3',
@@ -13,7 +13,7 @@ const headerStyle = {
 
 const contentStyle = {
     textAlign: 'center',
-    minHeight: '80%',
+    minHeight: '80vh',
     lineHeight: '30px',
     color: '#fff',
     backgroundColor: 'lightgray',
@@ -36,11 +36,11 @@ const footerStyle = {
 export const MainComponent= () => {
     return (
         <>
-            <Layout style={{height:"100vh"}}>
+            <Layout style={{minHeight:"100vh"}}>
                 <Sider style={siderStyle}>Sider</Sider>
                 <Layout>
                     <Header style={headerStyle}>
-                        <div><p style={{color:'wheat',fontSize:'30px'}}>Mock Page</p></div>
+                        <div><p style={{color:'#7a1278',fontSize:'30px'}}>Mock Page</p></div>
                     </Header>
                     <Content style={contentStyle}>
                         <InputForm/>
