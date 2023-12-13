@@ -12,7 +12,14 @@ import {
     Typography,
     Upload
 } from 'antd';
-import {DownloadOutlined, MinusCircleOutlined, PlusOutlined, UndoOutlined, UploadOutlined} from '@ant-design/icons';
+import {
+    DeleteColumnOutlined, DeleteOutlined,
+    DownloadOutlined,
+    MinusCircleOutlined,
+    PlusOutlined,
+    UndoOutlined,
+    UploadOutlined
+} from '@ant-design/icons';
 import {Fragment, useEffect, useState} from "react";
 import dayjs from "dayjs";
 
@@ -66,6 +73,7 @@ function PreviewModal({isModalOpen, handleOk, handleCancel, passengers}) {
                                               style={{
                                                   ...cardStyle,
                                                   borderWidth: "1px",
+                                                  margin: -1 //avoid double border width on cards intersection
                                               }}
                                               bodyStyle={{
                                                   backgroundColor: '#fff'
@@ -107,17 +115,14 @@ function PreviewModal({isModalOpen, handleOk, handleCancel, passengers}) {
     )
 }
 
-function PassengerRow({key, name}) {
+function PassengerRow({name, remove, passengerName}) {
     const dateFormatList = ['YYYY-MM-DD', 'YYYY-MM', 'YYYY']  //this allows for datepicker UI to switch to YYYY when YYYY is entered
+
     return (
         <Row
-            key={key}
             style={{
-                minHeight: "70px",
-                backgroundColor:'#90d6e3',
-                display:'flex',
-                alignContent:'end'
-        }}
+                justifyContent: 'center' //makes columns evenly spaced
+            }}
 
         >
             <Col span={3}
@@ -211,11 +216,26 @@ function PassengerRow({key, name}) {
                     />
                 </Form.Item>
             </Col>
+            <Col span={3}
+                 style={{
+                     display: "flex",
+                     alignItems: "center",
+                 }}
+            >
+                <Button
+                    type='text'
+                    onClick={() => {
+                        console.log("removing passenger", passengerName)
+                        remove(passengerName)  //actually an index 0,1,2 ..
+                    }}>
+                    <DeleteOutlined style={{color: '#9a1010'}}/>
+                </Button>
+            </Col>
         </Row>
     )
 }
 
-function PassengerDetails({form, setSaveable, passengers}) {
+function PassengerDetails({form, passengers,formTouched}) {
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     const showModal = () => {
@@ -242,28 +262,43 @@ function PassengerDetails({form, setSaveable, passengers}) {
             {(fields, {add, remove}) => (
                 <>
                     {
-                        fields.map(({key, name, ...restField}) => {
+                        fields.map(({key, name, index, ...restField}) => {
                             return (
-                                //all map elements should have key!
+                                //all map elements should have key! Docs:special props (ref and key) are used by React
                                 <Fragment key={key}>
-                                    <PassengerRow
-                                        name={name}
-                                    />
+                                    <Card
+                                        style={{
+                                            borderStyle: "dashed",
+                                            borderWidth: "2px",
+                                            margin: -2 //for intersections
+                                        }}
+                                        bodyStyle={{
+                                            padding: 0,
+                                        }}>
+                                        <PassengerRow
+                                            name={name}
+                                            remove={remove}
+                                            passengerName={name}
+                                        />
+                                    </Card>
                                 </Fragment>
                             )
                         })
                     }
-                    <Row style={{minHeight: "70px"}}>
-                        <Col span={4} style={{display: "flex"}}>
+                    <Row>
+                        <Col span={4} style={{
+                            display: "flex",
+                            marginTop: 12,
+                            marginBottom: 20
+                        }}>
                             <Button
                                 type="dashed"
                                 onClick={() => {
                                     add()
-                                    setSaveable(true)
-                                }
-                                }
+                                }}
                                 style={{
-                                    backgroundColor: '#bedaf8'
+                                    backgroundColor: '#bedaf8',
+
                                 }}
                                 icon={<PlusOutlined/>}
                             >
@@ -276,14 +311,11 @@ function PassengerDetails({form, setSaveable, passengers}) {
 
         </Form.List>
 
-        <Row style={{minHeight: "70px"}}>
+        <Row>
             <Col span={4} style={{display: "flex"}}>
-                <Form.Item
-                    wrapperCol={{
-                        offset: 1
-                    }}
-                >
+                <Form.Item>
                     <Button
+                        disabled={!formTouched} //only if some input field is touched, empty row doesnt count
                         type="primary"
                         htmlType="submit"
                         onClick={() => {
@@ -314,12 +346,12 @@ function PassengerDetails({form, setSaveable, passengers}) {
                     }}
                 >
                     <Button
+                        disabled={!form.isFieldsTouched()}  //after any change, even if empty row is added
                         type="primary"
                         style={{
                             backgroundColor: '#8d55a9'
                         }}
                         onClick={() => {
-                            setSaveable(false);
                             form.resetFields();
                         }}
                     >
@@ -362,7 +394,7 @@ function SaveDetails({form, saveable}) {
                     }}
                 >
                     <Button>
-                        <UploadOutlined/> Load saved passenger details
+                        <UploadOutlined/> Load saved details
                     </Button>
                 </Upload>
             </Col>
@@ -392,33 +424,47 @@ function SaveDetails({form, saveable}) {
 
 export function InputForm() {
     const [form] = Form.useForm();
-    const passengers = Form.useWatch('passengers', form)
+    const passengers = Form.useWatch('passengers', form) //watch (and rerender on change) the all input vars
     const [developerView, setDeveloperView] = useState(true)
-    const [saveable, setSaveable] = useState(false)
+    const [formTouched, setFormTouched] = useState(false);
+
+    useEffect(() => {
+        //if "empty",e.g. undefined or [] or [null]
+       if (!passengers ||(Array.isArray(passengers) && !passengers[0])){
+           setFormTouched(false)
+       } else {
+           setFormTouched(true)
+       }
+    }, [passengers])
 
     return (
         <>
             <Card title='Passenger details'
-                  headStyle={cardHeadStyle}
+                  headStyle={{
+                      ...cardHeadStyle,
+                      borderRadius: 0
+                  }}
                   style={{
                       ...cardStyle,
-                      borderBottomWidth: "2px"
+                      borderBottomWidth: "2px",
+                      borderRadius: 0
                   }}>
                 <PassengerDetails
                     passengers={passengers}
                     form={form}
-                    setSaveable={setSaveable}   //workaround to toggle on/off save button TODO:use touched property!
+                    formTouched={formTouched}
                 />
                 <Card title='Save details'
                       headStyle={cardHeadStyle}
                       style={{
                           ...cardStyle,
-                          borderWidth: "1px"
+                          borderWidth: "1px",
+                          width: "50%"
                       }}
                       bordered={false}>
                     <SaveDetails
                         form={form}
-                        saveable={saveable}
+                        saveable={formTouched}
                     />
                 </Card>
             </Card>
@@ -440,14 +486,10 @@ export function InputForm() {
                 >
                     {developerView &&
                         <div>
-                            <pre>JSON is {JSON.stringify({
-                                // ...(salutation ? {salutation} : {}), // add salutation key:value pair only if salutation is truthy, e.g. not ""
-                                ...form.getFieldValue(),
-                                // ...(birthdateFormatted ? {birthdate: birthdateFormatted} : {})
-                            }, null, 2)}
+                            <pre>JSON is {JSON.stringify(form.getFieldValue(), null, 2)}
                             </pre>
-                            {console.log(JSON.stringify(form.getFieldValue(), null, 2))}
-                            {/*<pre>Custom Value: {customValue}</pre>*/}
+                            {/*{console.log(JSON.stringify(form.getFieldValue(), null, 2))}*/}
+                            {console.log("Passengers", JSON.stringify(passengers, null, 2))}
                         </div>}
                 </Col>
             </Row>
